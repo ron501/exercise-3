@@ -1,36 +1,31 @@
 package com.mifen.zadanie3
 
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
-import android.widget.Button
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import androidx.room.Room
 
-class ViewFragment : Fragment(R.layout.fragment_view) {
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        val recyclerView = view.findViewById<RecyclerView>(R.id.messages)
-        val backButton = view.findViewById<Button>(R.id.back)
-        backButton.setOnClickListener {
-            (requireActivity() as MainActivity).toEdit()
-        }
-        lifecycleScope.launch(Dispatchers.IO) {
-            val posts = (requireActivity() as MainActivity).database.getDao().getPosts()
-            val adapter = Adapter(requireContext(), posts)
-            withContext(Dispatchers.Main){
-                recyclerView.adapter = adapter
-            }
-        }
+class MainActivity : AppCompatActivity() {
+    lateinit var editFragment: EditFragment
+    lateinit var viewFragment: ViewFragment
+    lateinit var database: PostDatabase
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        editFragment = EditFragment.newInstance()
+        viewFragment = ViewFragment.newInstance()
+        database = Room.databaseBuilder(this, PostDatabase::class.java, "post")
+            .build()
     }
 
-    companion object {
-        @JvmStatic
-        fun newInstance() =
-            ViewFragment()
+    fun toView(){
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.container, viewFragment)
+            .commit()
+    }
+
+    fun toEdit(){
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.container, editFragment)
+            .commit()
     }
 }
